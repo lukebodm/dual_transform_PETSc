@@ -77,7 +77,7 @@ int main(int argc, char **argv)
   PetscCall(VecDestroy(&v));
   PetscCall(VecDestroyVecs(k, &a));
   PetscCall(VecDestroyVecs(k, &q));
-  PetscCall(VecDestroyVecs(k, &p))
+  PetscCall(VecDestroyVecs(k, &p));
   PetscCall(PetscRandomDestroy(&rand));
   PetscCall(PetscFinalize());
   return 0;
