@@ -1,7 +1,7 @@
 #include <petsc.h>
 #include <petscvec.h>
 
-int return_dual_basis();
+PetscErrorCode return_dual_basis(Vec *a, Vec *q, Vec *p, Vec v, PetscInt k, PetscInt n); 
 
 int main(int argc, char **argv)
 {
@@ -40,25 +40,7 @@ int main(int argc, char **argv)
     PetscCall(VecSetRandom(a[i], rand));
   }
 
-  // iteratively run psuedocode outer loop
-  // that orthogonalizes the vectors
-  // algortihm from page 1050-1051
-  PetscCall(VecNorm(a[0], NORM_2, &nrm));
-  PetscCall(VecCopy(a[0],q[0]));
-  PetscCall(VecScale(q[0], 1./(nrm*nrm)));
-  PetscCall(VecCopy(a[0],p[0]));
-    for (k=1; k<n; ++k) {
-      // compute p_k
-      PetscCall(VecCopy(a[k], v));
-      for(j=0; j<=k-1; ++j) {
-        PetscCall(VecDot(q[j], a[k], &dot));
-        PetscCall(VecAXPY(v, -dot, p[j]));
-      }
-      PetscCall(VecCopy(v, p[k]));
-      PetscCall(VecNorm(v, NORM_2, &nrm));
-      PetscCall(VecScale(v, 1./(nrm*nrm)));
-      PetscCall(VecCopy(v, q[k]));
-    }
+  return_dual_basis(a, p, q, v, k, n);  
 
   // create view of output vectors
   for (i=0; i<k; ++i) {
@@ -83,6 +65,28 @@ int main(int argc, char **argv)
   return 0;
 }
 
-int return_dual_basis() {
-  return 0;
+PetscErrorCode return_dual_basis(Vec *a, Vec *p, Vec *q, Vec v, PetscInt k, PetscInt n) {
+ 
+  PetscReal   dot, nrm;  // dot product, normalization, vector size
+  PetscInt    j;  // number of vectors to orthogonalize
+
+  // algortihm from page 1050-1051
+  PetscCall(VecNorm(a[0], NORM_2, &nrm));
+  PetscCall(VecCopy(a[0], q[0]));
+  PetscCall(VecScale(q[0], 1./(nrm*nrm)));
+  PetscCall(VecCopy(a[0],p[0]));
+    for (k=1; k<n; ++k) {
+      // compute p_k
+      PetscCall(VecCopy(a[k], v));
+      for(j=0; j<=k-1; ++j) {
+        PetscCall(VecDot(q[j], a[k], &dot));
+        PetscCall(VecAXPY(v, -dot, p[j]));
+      }
+      PetscCall(VecCopy(v, p[k]));
+      PetscCall(VecNorm(v, NORM_2, &nrm));
+      PetscCall(VecScale(v, 1./(nrm*nrm)));
+      PetscCall(VecCopy(v, q[k]));
+    }
+
+
 }
