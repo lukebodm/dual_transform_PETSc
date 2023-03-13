@@ -2,6 +2,7 @@
 #include <petscvec.h>
 
 PetscErrorCode return_dual_basis(Vec *a, Vec *q, Vec *p, Vec v, PetscInt k, PetscInt n); 
+PetscErrorCode test_biorthogonality(Vec *q, Vec *a, PetscInt k);
 
 int main(int argc, char **argv)
 {
@@ -30,7 +31,7 @@ int main(int argc, char **argv)
   PetscCall(VecSetSizes(v, PETSC_DECIDE, n));
   PetscCall(VecSetFromOptions(v));
 
-  // create input and output array by duplicating vector
+  // create input, output, and temp array by duplicating vector
   PetscCall(VecDuplicateVecs(v, k, &a));
   PetscCall(VecDuplicateVecs(v, k, &q));
   PetscCall(VecDuplicateVecs(v, k, &p));
@@ -42,18 +43,12 @@ int main(int argc, char **argv)
 
   return_dual_basis(a, p, q, v, k, n);  
 
+  test_biorthogonality(q,a,k);
+
   // create view of output vectors
   for (i=0; i<k; ++i) {
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject)q[i], "q_"));
     PetscCall(VecViewFromOptions(q[i], NULL, "-vec_view"));
-  }
-
- // print the dot product of all combinations of vectors of q
-  for (i=0; i<k; ++i){
-    for (j=0; j<k; ++j) {
-      PetscCall(VecDot(q[i], a[j], &dot));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "q%d . a%d: %g\n",i, j, (double)dot));
-    }
   }
 
   PetscCall(VecDestroy(&v));
@@ -87,6 +82,16 @@ PetscErrorCode return_dual_basis(Vec *a, Vec *p, Vec *q, Vec v, PetscInt k, Pets
       PetscCall(VecScale(v, 1./(nrm*nrm)));
       PetscCall(VecCopy(v, q[k]));
     }
+}
 
-
+PetscErrorCode test_biorthogonality(Vec *q, Vec *a, PetscInt k) {
+  PetscInt i, j;
+  PetscReal dot;
+  // print the dot product of all combinations of vectors of q
+  for (i=0; i<k; ++i){
+    for (j=0; j<k; ++j) {
+      PetscCall(VecDot(q[i], a[j], &dot));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "q%d . a%d: %g\n",i, j, (double)dot));
+    }
+  }
 }
