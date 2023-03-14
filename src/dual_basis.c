@@ -3,6 +3,7 @@
 
 PetscErrorCode return_dual_basis(Vec *a, Vec *q, Vec *p, Vec v, PetscInt k, PetscInt n); 
 PetscErrorCode test_biorthogonality(Vec *q, Vec *a, PetscInt k);
+PetscErrorCode test_orthogonality(Vec *q, PetscInt k);
 
 int main(int argc, char **argv)
 {
@@ -44,6 +45,8 @@ int main(int argc, char **argv)
   return_dual_basis(a, p, q, v, k, n);  
 
   test_biorthogonality(q,a,k);
+
+  test_orthogonality(q,k);
 
   // create view of output vectors
   for (i=0; i<k; ++i) {
@@ -92,6 +95,19 @@ PetscErrorCode test_biorthogonality(Vec *q, Vec *a, PetscInt k) {
     for (j=0; j<k; ++j) {
       PetscCall(VecDot(q[i], a[j], &dot));
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "q%d . a%d: %g\n",i, j, (double)dot));
+    }
+  }
+}
+
+PetscErrorCode test_orthogonality(Vec *q, PetscInt k) {
+  PetscInt i, j;
+  PetscReal dot;
+  // print the dot product of all combinations of vectors of q
+  printf("\n====dual vectors orthogonality===\n");
+  for (i=0; i<k; ++i){
+    for (j=i; j<k; ++j) {
+      PetscCall(VecDot(q[i], q[j], &dot));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "q%d . q%d: %g\n",i, j, (double)dot));
     }
   }
 }
