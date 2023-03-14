@@ -11,8 +11,8 @@ int main(int argc, char **argv)
   Vec         *q;           // array of output (orthonormal vectors)
   Vec         *p;           // array of projected components
   PetscRandom rand;         // for setting random vectors
-  PetscReal   dot, nrm, n;  // dot product, normalization, vector size
-  PetscInt    i, j, k = 7;  // number of vectors to orthogonalize
+  PetscReal   n;            // vector size
+  PetscInt    i, k = 7;     // iterator and number of vectors to orthogonalize
   PetscInt    r = 32;       // seed for random generator
   MPI_Comm    comm;
   n = k;                    // vector lenghth = number of vectors (square matrix)
@@ -65,7 +65,7 @@ PetscErrorCode return_dual_basis(Vec *a, Vec *p, Vec *q, Vec v, PetscInt k, Pets
   PetscReal   dot, nrm;  // dot product, normalization, vector size
   PetscInt    j;  // number of vectors to orthogonalize
 
-  // algortihm from page 1050-1051
+  // algortihm from page 1037
   PetscCall(VecNorm(a[0], NORM_2, &nrm));
   PetscCall(VecCopy(a[0], q[0]));
   PetscCall(VecScale(q[0], 1./(nrm*nrm)));
