@@ -1,9 +1,9 @@
 #include <petsc.h>
 #include <petscvec.h>
 
-PetscErrorCode return_dual_basis(Vec *a, Vec *q, Vec *p, Vec v, PetscInt k, PetscInt n); 
-PetscErrorCode test_biorthogonality(Vec *q, Vec *a, PetscInt k);
-PetscErrorCode test_orthogonality(Vec *q, PetscInt k);
+static PetscErrorCode return_dual_basis(Vec *a, Vec *q, Vec *p, Vec v, PetscInt k, PetscInt n); 
+static PetscErrorCode test_biorthogonality(Vec *q, Vec *a, PetscInt k);
+static PetscErrorCode test_orthogonality(Vec *q, PetscInt k);
 
 int main(int argc, char **argv)
 {
@@ -63,7 +63,7 @@ int main(int argc, char **argv)
   return 0;
 }
 
-PetscErrorCode return_dual_basis(Vec *a, Vec *p, Vec *q, Vec v, PetscInt k, PetscInt n) {
+static PetscErrorCode return_dual_basis(Vec *a, Vec *p, Vec *q, Vec v, PetscInt k, PetscInt n) {
  
   PetscReal   dot, nrm;  // dot product, normalization, vector size
   PetscInt    j;  // number of vectors to orthogonalize
@@ -76,7 +76,7 @@ PetscErrorCode return_dual_basis(Vec *a, Vec *p, Vec *q, Vec v, PetscInt k, Pets
     for (k=1; k<n; ++k) {
       // compute p_k
       PetscCall(VecCopy(a[k], v));
-      for(j=0; j<=k-1; ++j) {
+      for(j=0; j<n; ++j) {
         PetscCall(VecDot(q[j], a[k], &dot));
         PetscCall(VecAXPY(v, -dot, p[j]));
       }
@@ -85,29 +85,33 @@ PetscErrorCode return_dual_basis(Vec *a, Vec *p, Vec *q, Vec v, PetscInt k, Pets
       PetscCall(VecScale(v, 1./(nrm*nrm)));
       PetscCall(VecCopy(v, q[k]));
     }
+    return 0;
 }
 
-PetscErrorCode test_biorthogonality(Vec *q, Vec *a, PetscInt k) {
+static PetscErrorCode test_biorthogonality(Vec *q, Vec *a, PetscInt k) {
   PetscInt i, j;
   PetscReal dot;
   // print the dot product of all combinations of vectors of q
+  printf("\n=== dual list orthogonality ===\n");
   for (i=0; i<k; ++i){
     for (j=0; j<k; ++j) {
       PetscCall(VecDot(q[i], a[j], &dot));
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "q%d . a%d: %g\n",i, j, (double)dot));
     }
   }
+  return 0;
 }
 
-PetscErrorCode test_orthogonality(Vec *q, PetscInt k) {
+static PetscErrorCode test_orthogonality(Vec *q, PetscInt k) {
   PetscInt i, j;
   PetscReal dot;
   // print the dot product of all combinations of vectors of q
-  printf("\n====dual vectors orthogonality===\n");
+  printf("\n==== dual vectors orthogonality ===\n");
   for (i=0; i<k; ++i){
     for (j=i; j<k; ++j) {
       PetscCall(VecDot(q[i], q[j], &dot));
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "q%d . q%d: %g\n",i, j, (double)dot));
     }
   }
+  return 0;
 }
