@@ -85,6 +85,12 @@ static PetscErrorCode return_dual_basis(Vec *a, Vec *p, Vec *q, Vec v, PetscInt 
       PetscCall(VecScale(v, 1./(nrm*nrm)));
       PetscCall(VecCopy(v, q[k]));
     }
+    for(k=n-2; k>=0; --k) {
+      for(j=k+1; j<=n-1;++j ){
+        PetscCall(VecDot(q[k],a[j],&dot));
+        PetscCall(VecAXPY(q[k], -dot, q[j]));
+      }
+    }
     return 0;
 }
 
